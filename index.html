@@ -280,6 +280,20 @@
     const dd   = String(now.getDate()).padStart(2, '0');
     const dateStr = `${yyyy}-${mm}-${dd}`;
     input.value = `${dateStr}.md`;
+
+    // トークンを localStorage から復元
+    const tokenInput = document.getElementById('token');
+    const savedToken = localStorage.getItem('github_token');
+    if (tokenInput && savedToken) {
+      tokenInput.value = savedToken;
+    }
+
+    // Token欄が変更されたら localStorage に保存
+    if (tokenInput) {
+      tokenInput.addEventListener('input', () => {
+        localStorage.setItem('github_token', tokenInput.value);
+      });
+    }
   });
 </script>
 
