@@ -1,6 +1,7 @@
 ---
 title: "CBTログ README"
-permalink: /scrapbox-daily-log/README.html
+layout: none
+permalink: /README.html
 ---
 
 # CBTログ
