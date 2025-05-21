@@ -7,6 +7,9 @@ body {
     section {
       margin-bottom: 1.5em;
     }
+    a {
+      color:black;
+    }
     details summary {
       font-weight: bold;
       margin-top: 1em;

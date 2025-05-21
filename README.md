@@ -1,3 +1,8 @@
+---
+title: "CBTログ README"
+permalink: /scrapbox-daily-log/README.html
+---
+
 # CBTログ
 
 ブラウザ上でCBTログを作成し、GitHub Gist に非公開投稿して共有できる静的HTMLツールです。  
