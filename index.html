@@ -16,7 +16,173 @@
   </style>
 </head>
 <body>
-  <!-- （中略）HTMLの内容は前と同じため省略 -->
-  <!-- 完全なHTMLは省略されていますが、前回の内容と同一です -->
+  <h1>📋 Scrapbox日報ジェネレーター v2</h1>
+
+  <label>総評: <input type="text" id="summary"></label>
+
+  <h3>天気</h3>
+  <div class="flex">
+    <label>天気: 
+      <select id="weather">
+        <option value="☀️">☀️</option><option value="🌤️">🌤️</option><option value="☁️">☁️</option>
+        <option value="🌧️">🌧️</option><option value="⛈️">⛈️</option><option value="❄️">❄️</option>
+      </select>
+    </label>
+    <label>気温（℃）: <input type="number" id="temp" min="-10" max="50"></label>
+    <label>体感: <input type="text" id="feeling"></label>
+  </div>
+
+  <h3>睡眠</h3>
+  <div class="flex">
+    <label>就寝: <input type="time" id="sleepTime" step="1800"></label>
+    <label>起床: <input type="time" id="wakeTime" step="1800"></label>
+    <div id="sleepPreview" class="inline"></div>
+  </div>
+  <label>質（1〜5pt）: 
+    <select id="sleepQuality">
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </label>
+
+  <h3>食事</h3>
+  <div class="flex">
+    <label>朝 <input type="checkbox" id="mealMorning"></label>
+    <label>昼 <input type="checkbox" id="mealNoon"></label>
+    <label>夕 <input type="checkbox" id="mealEvening"></label>
+  </div>
+
+  <label>入浴: 
+    <select id="bath">
+      <option value="なし">なし</option>
+      <option value="シャワー">シャワー</option>
+      <option value="湯船">湯船</option>
+    </select>
+  </label>
+
+  <h3>体調</h3>
+  <label>AMスコア: 
+    <select id="condAM">
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </label>
+  <label>PMスコア: 
+    <select id="condPM">
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </label>
+  <label>自由記述: <textarea id="condNote"></textarea></label>
+
+  <h3>症状</h3>
+  <div id="symptomsContainer" class="flex">
+    <label><input type="checkbox" value="倦怠感">倦怠感</label>
+    <label><input type="checkbox" value="眠気">眠気</label>
+    <label><input type="checkbox" value="動悸">動悸</label>
+    <label><input type="checkbox" value="脂汗">脂汗</label>
+    <label><input type="checkbox" value="手の震え">手の震え</label>
+    <label><input type="checkbox" value="焦燥感">焦燥感</label>
+    <label><input type="checkbox" value="頭痛">頭痛</label>
+    <label><input type="checkbox" value="パニック発作">パニック発作</label>
+    <label><input type="checkbox" id="symptomOtherCheck">その他</label>
+    <input type="text" id="symptomOtherText" class="hidden" placeholder="その他の症状">
+  </div>
+
+  <h3>デパス</h3>
+  <label>服用量（T）: 
+    <select id="depas">
+      <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+      <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+      <option value="6">6</option>
+    </select>
+    <span id="depasPreview" class="inline"></span>
+  </label>
+
+  <h3>嗜好品</h3>
+  <label>
+    <select id="beverageType">
+      <option value="カフェイン">カフェイン</option>
+      <option value="アルコール">アルコール</option>
+      <option value="喫煙">喫煙</option>
+      <option value="その他">その他</option>
+    </select>
+  </label>
+  <input type="text" id="beverageOther" class="hidden" placeholder="その他の内容">
+
+  <h3>ふりかえり</h3>
+  <label>気分: <input type="text" id="mood"></label>
+  <label>スコア（1〜5pt）: 
+    <select id="moodScore">
+      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+    </select>
+  </label>
+
+  <button onclick="generate()">📋 出力を生成</button>
+
+  <div class="output" id="outputArea"></div>
+  <div class="preview" id="previewArea"></div>
+
+  <script>
+    document.getElementById("sleepTime").addEventListener("change", updateSleepPreview);
+    document.getElementById("wakeTime").addEventListener("change", updateSleepPreview);
+    document.getElementById("depas").addEventListener("change", updateDepasPreview);
+    document.getElementById("symptomOtherCheck").addEventListener("change", function() {
+      document.getElementById("symptomOtherText").classList.toggle("hidden", !this.checked);
+    });
+    document.getElementById("beverageType").addEventListener("change", function() {
+      document.getElementById("beverageOther").classList.toggle("hidden", this.value !== "その他");
+    });
+
+    function updateSleepPreview() {
+      const val = calculateSleepHours();
+      document.getElementById("sleepPreview").textContent = val ? `= ${val}h` : "";
+    }
+
+    function updateDepasPreview() {
+      const t = parseInt(document.getElementById("depas").value);
+      document.getElementById("depasPreview").textContent = `= ${(t * 0.5).toFixed(1)}mg`;
+    }
+
+    function calculateSleepHours() {
+      const start = document.getElementById('sleepTime').value;
+      const end = document.getElementById('wakeTime').value;
+      if (!start || !end) return '';
+      const [sh, sm] = start.split(':').map(Number);
+      const [eh, em] = end.split(':').map(Number);
+      let startMin = sh * 60 + sm, endMin = eh * 60 + em;
+      if (endMin <= startMin) endMin += 1440;
+      return Math.floor((endMin - startMin) / 60);
+    }
+
+    function generate() {
+      const s = id => document.getElementById(id).value;
+      const sc = id => document.getElementById(id).checked;
+      const hours = calculateSleepHours();
+      const symptoms = [...document.querySelectorAll("#symptomsContainer input[type=checkbox]")]
+        .filter(cb => cb.checked && cb.value).map(cb => cb.value);
+      if (document.getElementById("symptomOtherCheck").checked) {
+        symptoms.push(document.getElementById("symptomOtherText").value);
+      }
+      const depas = parseInt(s("depas")), depasMg = (depas * 0.5).toFixed(1);
+      const bevType = s("beverageType");
+      const beverage = bevType === "その他" ? document.getElementById("beverageOther").value : bevType;
+
+      const text = `[** 📋 概要ログ]
+ 総評: \`${s("summary")}\`
+ 天気: \`${s("weather")}, 日中${s("temp")}℃, ${s("feeling")}\`
+ 睡眠: \`${hours}h\` 質: \`${s("sleepQuality")}/5pt\`
+ 食事: 朝\`${sc("mealMorning") ? "◯" : "☓"}\`｜昼\`${sc("mealNoon") ? "◯" : "☓"}\`｜夕\`${sc("mealEvening") ? "◯" : "☓"}\`
+ 入浴: \`${s("bath")}\`
+ 体調: \`AM:${s("condAM")}/5pt\`｜\`PM:${s("condPM")}/5pt\`
+  ${s("condNote")}
+ 症状: \`${symptoms.join(",")}\`
+ デパス(0.5mg): \`${depas}T/d\` = \`${depasMg}mg/d\`
+ 嗜好品: \`${beverage}\`
+ [* ふりかえり時の気分 (情緒の終着点)]
+  気分: \`${s("mood")}\`
+  score: \`${s("moodScore")}/5pt\``;
+
+      document.getElementById("outputArea").textContent = text;
+      document.getElementById("previewArea").innerHTML = text.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\n/g, "<br>");
+    }
+  </script>
 </body>
 </html>
