@@ -253,7 +253,9 @@
         if (val?.trim()) output.push(`■ ${title}`, val.trim(), "");
       });
 
-    document.getElementById("output-text").textContent = output.join("\n");
+    // 各行の末尾にスペース２つをつけて改行
+    const md = output.map(line => line + "  ").join("\n");
+    document.getElementById("output-text").textContent = md;
   }
 
   document.addEventListener("DOMContentLoaded", () => {
