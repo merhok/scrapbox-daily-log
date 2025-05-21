@@ -1,6 +1,5 @@
 ---
 title: "CBTログ README"
-layout: none
 permalink: /README.html
 ---
 
