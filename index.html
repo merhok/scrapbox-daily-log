@@ -2,58 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Scrapbox 日報ログ</title>
+  <title>CBTログ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 1em;
-      max-width: 600px;
-      margin: auto;
-    }
-    section {
-      margin-bottom: 1.5em;
-    }
-    details summary {
-      font-weight: bold;
-      margin-top: 1em;
-      cursor: pointer;
-    }
-    .entry, .activity-entry, .substance-entry {
-      display: flex;
-      gap: 0.5em;
-      margin-bottom: 0.5em;
-    }
-    #status-message {
-      color: green;
-      font-size: 0.9em;
-      margin-top: 0.3em;
-    }
-    @media (max-width: 600px) {
-      body {
-        padding: 1em;
-        font-size: 1.1em;
-      }
-      .entry, .activity-entry, .substance-entry {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      input[type="text"], input[type="time"], textarea {
-        width: 100%;
-        font-size: 1em;
-        padding: 0.6em;
-      }
-      button {
-        width: 100%;
-        padding: 0.8em;
-        margin-top: 0.5em;
-        font-size: 1em;
-      }
-      #output-text {
-        font-size: 0.95em;
-      }
-    }
-  </style>
+  
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -86,26 +38,26 @@
   <h2>症状チェック</h2>
 
   <h3>身体</h3>
-  <label><input type="checkbox" class="symptom" value="headache"> 頭痛</label>
-  <label><input type="checkbox" class="symptom" value="fatigue"> 倦怠感</label>
-  <label><input type="checkbox" class="symptom" value="stomach"> 胃もたれ</label>
-  <label><input type="checkbox" class="symptom" value="shoulder"> 肩こり</label>
-  <label><input type="checkbox" class="symptom" value="cold"> 冷え</label>
-  <label><input type="checkbox" class="symptom" value="hot"> ほてり</label>
+  <label><input type="checkbox" class="symptom" value="頭痛"> 頭痛</label>
+  <label><input type="checkbox" class="symptom" value="倦怠感"> 倦怠感</label>
+  <label><input type="checkbox" class="symptom" value="胃もたれ"> 胃もたれ</label>
+  <label><input type="checkbox" class="symptom" value="肩こり"> 肩こり</label>
+  <label><input type="checkbox" class="symptom" value="冷え"> 冷え</label>
+  <label><input type="checkbox" class="symptom" value="ほてり"> ほてり</label>
 
   <h3>メンタル</h3>
-  <label><input type="checkbox" class="symptom" value="anxiety"> 不安</label>
-  <label><input type="checkbox" class="symptom" value="depression"> 抑うつ</label>
-  <label><input type="checkbox" class="symptom" value="tension"> 焦燥感</label>
-  <label><input type="checkbox" class="symptom" value="burnout"> 気力低下</label>
-  <label><input type="checkbox" class="symptom" value="concentration"> 過集中</label>
-  <label><input type="checkbox" class="symptom" value="social"> 対人ストレス</label>
+  <label><input type="checkbox" class="symptom" value="不安"> 不安</label>
+  <label><input type="checkbox" class="symptom" value="抑うつ"> 抑うつ</label>
+  <label><input type="checkbox" class="symptom" value="焦燥感"> 焦燥感</label>
+  <label><input type="checkbox" class="symptom" value="気力低下"> 気力低下</label>
+  <label><input type="checkbox" class="symptom" value="過集中"> 過集中</label>
+  <label><input type="checkbox" class="symptom" value="対人ストレス"> 対人ストレス</label>
 
   <h3>その他</h3>
-  <label><input type="checkbox" class="symptom" value="dizziness"> めまい</label>
-  <label><input type="checkbox" class="symptom" value="overeating"> 過食</label>
-  <label><input type="checkbox" class="symptom" value="wakening"> 夜間覚醒</label>
-  <label><input type="checkbox" class="symptom" value="palpitation"> 動悸</label>
+  <label><input type="checkbox" class="symptom" value="めまい"> めまい</label>
+  <label><input type="checkbox" class="symptom" value="過食"> 過食</label>
+  <label><input type="checkbox" class="symptom" value="夜間覚醒"> 夜間覚醒</label>
+  <label><input type="checkbox" class="symptom" value="動悸"> 動悸</label>
 </section>
 
 <section>
@@ -132,8 +84,15 @@
 <section>
   <div id="status-message"></div>
   <button id="generate-output">Scrapbox用に出力</button>
+  <button id="post-gist">Gistに投稿して共有</button>
+  <div>
+    <label>ファイル名：<input type="text" id="filename" placeholder="yyyy-mm-dd.md"></label>
+    <label>GitHub Token：<input type="password" id="token" placeholder="ghp_..."></label>
+  </div>
+
+  
   <pre id="output-text" style="white-space: pre-wrap; background: #f0f0f0; padding: 1em; margin-top: 1em;"></pre>
-  <button id="reset-storage">保存データをリセット</button>
+  <button id="reset-storage">一時保存データをリセット</button>
 </section>
 
 <script>
@@ -232,7 +191,7 @@
   }
 
   function resetAll() {
-    if (confirm("保存されたデータをすべて削除します。よろしいですか？")) {
+    if (confirm("一時保存されたデータをすべて削除します。よろしいですか？")) {
       ["log_sleep_start","log_sleep_end","log_activity","log_substance","log_symptoms","log_health","log_overall","log_review"].forEach(k => localStorage.removeItem(k));
       location.reload();
     }
@@ -309,7 +268,22 @@
     document.getElementById("reset-storage").addEventListener("click", resetAll);
     document.getElementById("generate-output").addEventListener("click", generateScrapboxOutput);
   });
+
+  // ロード時にファイル名を yyyy-mm-dd.md で埋める
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('filename');
+    if (!input) return;
+    // ローカルの日付を取得
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm   = String(now.getMonth() + 1).padStart(2, '0');
+    const dd   = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    input.value = `${dateStr}.md`;
+  });
 </script>
 
+  <script type="module" src="gist-util.js"></script>
+  <script type="module" src="gist.js"></script>
 </body>
 </html>
