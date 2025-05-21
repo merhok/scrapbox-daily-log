@@ -2,187 +2,232 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>📋 Scrapbox日報ジェネレーター v2</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scrapbox 日報ログ</title>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    label { display: block; margin-top: 10px; }
-    input, select, textarea { width: 100%; padding: 5px; margin-top: 4px; }
-    textarea { height: 60px; }
-    .output, .preview { white-space: pre-wrap; background: #f9f9f9; padding: 10px; margin-top: 20px; border: 1px solid #ccc; }
-    .flex { display: flex; gap: 10px; flex-wrap: wrap; }
-    .inline { display: inline-block; margin-right: 10px; }
-    .hidden { display: none; }
+    body { font-family: sans-serif; padding: 1em; max-width: 600px; margin: auto; }
+    section { margin-bottom: 1.5em; }
+    details summary { font-weight: bold; margin-top: 1em; cursor: pointer; }
+    .entry, .activity-entry, .substance-entry { display: flex; gap: 0.5em; margin-bottom: 0.5em; }
+    #status-message { color: green; font-size: 0.9em; margin-top: 0.3em; }
   </style>
 </head>
 <body>
-  <h1>📋 Scrapbox日報ジェネレーター v2</h1>
 
-  <label>総評: <input type="text" id="summary"></label>
+  <!-- 日付表示 -->
+  <section>
+    <div id="today-date"></div>
+  </section>
 
-  <h3>天気</h3>
-  <div class="flex">
-    <label>天気: 
-      <select id="weather">
-        <option value="☀️">☀️</option><option value="🌤️">🌤️</option><option value="☁️">☁️</option>
-        <option value="🌧️">🌧️</option><option value="⛈️">⛈️</option><option value="❄️">❄️</option>
-      </select>
-    </label>
-    <label>気温（℃）: <input type="number" id="temp" min="-10" max="50"></label>
-    <label>体感: <input type="text" id="feeling"></label>
-  </div>
+  <!-- 睡眠 -->
+  <section>
+    <h2>睡眠</h2>
+    <label>就寝 <input type="time" id="sleep-start" step="900"></label>
+    <label>起床 <input type="time" id="sleep-end" step="900"></label>
+    <div id="sleep-duration">睡眠時間：</div>
+  </section>
 
-  <h3>睡眠</h3>
-  <div class="flex">
-    <label>就寝: <input type="time" id="sleepTime" step="1800"></label>
-    <label>起床: <input type="time" id="wakeTime" step="1800"></label>
-    <div id="sleepPreview" class="inline"></div>
-  </div>
-  <label>質（1〜5pt）: 
-    <select id="sleepQuality">
-      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-    </select>
-  </label>
+  <!-- 行動メモ -->
+  <section>
+    <h2>行動メモ</h2>
+    <div id="activity-log"></div>
+    <button id="add-activity">＋ 行動を追加</button>
+  </section>
 
-  <h3>食事</h3>
-  <div class="flex">
-    <label>朝 <input type="checkbox" id="mealMorning"></label>
-    <label>昼 <input type="checkbox" id="mealNoon"></label>
-    <label>夕 <input type="checkbox" id="mealEvening"></label>
-  </div>
+  <!-- 嗜好品 -->
+  <section>
+    <details open>
+      <summary>嗜好品</summary>
+      <div id="substance-log"></div>
+      <button id="add-substance">＋ 嗜好品を追加</button>
+    </details>
+  </section>
 
-  <label>入浴: 
-    <select id="bath">
-      <option value="なし">なし</option>
-      <option value="シャワー">シャワー</option>
-      <option value="湯船">湯船</option>
-    </select>
-  </label>
+  <!-- 症状チェック -->
+  <section>
+    <h2>症状チェック</h2>
+    <label><input type="checkbox" class="symptom" value="headache"> 頭痛</label>
+    <label><input type="checkbox" class="symptom" value="fatigue"> 疲労感</label>
+    <label><input type="checkbox" class="symptom" value="anxiety"> 不安</label>
+  </section>
 
-  <h3>体調</h3>
-  <label>AMスコア: 
-    <select id="condAM">
-      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-    </select>
-  </label>
-  <label>PMスコア: 
-    <select id="condPM">
-      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-    </select>
-  </label>
-  <label>自由記述: <textarea id="condNote"></textarea></label>
+  <!-- 自由記述：体調補足 -->
+  <section>
+    <details>
+      <summary>体調の補足</summary>
+      <textarea id="note-health" rows="3" style="width: 100%;"></textarea>
+    </details>
+  </section>
 
-  <h3>症状</h3>
-  <div id="symptomsContainer" class="flex">
-    <label><input type="checkbox" value="倦怠感">倦怠感</label>
-    <label><input type="checkbox" value="眠気">眠気</label>
-    <label><input type="checkbox" value="動悸">動悸</label>
-    <label><input type="checkbox" value="脂汗">脂汗</label>
-    <label><input type="checkbox" value="手の震え">手の震え</label>
-    <label><input type="checkbox" value="焦燥感">焦燥感</label>
-    <label><input type="checkbox" value="頭痛">頭痛</label>
-    <label><input type="checkbox" value="パニック発作">パニック発作</label>
-    <label><input type="checkbox" id="symptomOtherCheck">その他</label>
-    <input type="text" id="symptomOtherText" class="hidden" placeholder="その他の症状">
-  </div>
+  <!-- 自由記述：総評 -->
+  <section>
+    <details>
+      <summary>今日の総評</summary>
+      <textarea id="note-overall" rows="3" style="width: 100%;"></textarea>
+    </details>
+  </section>
 
-  <h3>デパス</h3>
-  <label>服用量（T）: 
-    <select id="depas">
-      <option value="0">0</option><option value="1">1</option><option value="2">2</option>
-      <option value="3">3</option><option value="4">4</option><option value="5">5</option>
-      <option value="6">6</option>
-    </select>
-    <span id="depasPreview" class="inline"></span>
-  </label>
+  <!-- 自由記述：ふりかえり -->
+  <section>
+    <details>
+      <summary>ふりかえり・所感</summary>
+      <textarea id="note-review" rows="3" style="width: 100%;"></textarea>
+    </details>
+  </section>
 
-  <h3>嗜好品</h3>
-  <label>
-    <select id="beverageType">
-      <option value="カフェイン">カフェイン</option>
-      <option value="アルコール">アルコール</option>
-      <option value="喫煙">喫煙</option>
-      <option value="その他">その他</option>
-    </select>
-  </label>
-  <input type="text" id="beverageOther" class="hidden" placeholder="その他の内容">
-
-  <h3>ふりかえり</h3>
-  <label>気分: <input type="text" id="mood"></label>
-  <label>スコア（1〜5pt）: 
-    <select id="moodScore">
-      <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-    </select>
-  </label>
-
-  <button onclick="generate()">📋 出力を生成</button>
-
-  <div class="output" id="outputArea"></div>
-  <div class="preview" id="previewArea"></div>
+  <!-- ステータス表示＋リセット -->
+  <section>
+    <div id="status-message"></div>
+    <button id="reset-storage">保存データをリセット</button>
+  </section>
 
   <script>
-    document.getElementById("sleepTime").addEventListener("change", updateSleepPreview);
-    document.getElementById("wakeTime").addEventListener("change", updateSleepPreview);
-    document.getElementById("depas").addEventListener("change", updateDepasPreview);
-    document.getElementById("symptomOtherCheck").addEventListener("change", function() {
-      document.getElementById("symptomOtherText").classList.toggle("hidden", !this.checked);
-    });
-    document.getElementById("beverageType").addEventListener("change", function() {
-      document.getElementById("beverageOther").classList.toggle("hidden", this.value !== "その他");
-    });
-
-    function updateSleepPreview() {
-      const val = calculateSleepHours();
-      document.getElementById("sleepPreview").textContent = val ? `= ${val}h` : "";
+    // 日付表示
+    function displayToday() {
+      const now = new Date();
+      const days = ["日", "月", "火", "水", "木", "金", "土"];
+      const str = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}（${days[now.getDay()]}）`;
+      document.getElementById("today-date").textContent = "📅 " + str;
     }
 
-    function updateDepasPreview() {
-      const t = parseInt(document.getElementById("depas").value);
-      document.getElementById("depasPreview").textContent = `= ${(t * 0.5).toFixed(1)}mg`;
+    // 睡眠時間計算
+    function calculateSleepDuration() {
+      const start = document.getElementById("sleep-start").value;
+      const end = document.getElementById("sleep-end").value;
+      const display = document.getElementById("sleep-duration");
+      if (!start || !end) return display.textContent = "睡眠時間：";
+      const [sH, sM] = start.split(":").map(Number);
+      const [eH, eM] = end.split(":").map(Number);
+      let mins = (eH * 60 + eM) - (sH * 60 + sM);
+      if (mins <= 0) mins += 1440;
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      display.textContent = `睡眠時間：${h}時間${m > 0 ? m + "分" : ""}`;
     }
 
-    function calculateSleepHours() {
-      const start = document.getElementById('sleepTime').value;
-      const end = document.getElementById('wakeTime').value;
-      if (!start || !end) return '';
-      const [sh, sm] = start.split(':').map(Number);
-      const [eh, em] = end.split(':').map(Number);
-      let startMin = sh * 60 + sm, endMin = eh * 60 + em;
-      if (endMin <= startMin) endMin += 1440;
-      return Math.floor((endMin - startMin) / 60);
+    // 行動・嗜好品の共通追加処理
+    function addEntry(containerId, className, content = "", time = "", saveFunc) {
+      const container = document.getElementById(containerId);
+      const div = document.createElement("div");
+      div.className = className;
+      const text = document.createElement("input");
+      text.type = "text"; text.placeholder = "内容"; text.value = content;
+      const clock = document.createElement("input");
+      clock.type = "time"; clock.value = time;
+      text.addEventListener("input", saveFunc);
+      clock.addEventListener("change", saveFunc);
+      div.appendChild(text); div.appendChild(clock); container.appendChild(div);
     }
 
-    function generate() {
-      const s = id => document.getElementById(id).value;
-      const sc = id => document.getElementById(id).checked;
-      const hours = calculateSleepHours();
-      const symptoms = [...document.querySelectorAll("#symptomsContainer input[type=checkbox]")]
-        .filter(cb => cb.checked && cb.value).map(cb => cb.value);
-      if (document.getElementById("symptomOtherCheck").checked) {
-        symptoms.push(document.getElementById("symptomOtherText").value);
+    function saveActivityLog() {
+      const entries = Array.from(document.querySelectorAll(".activity-entry")).map(e => {
+        const [text, time] = e.querySelectorAll("input");
+        return { content: text.value, time: time.value };
+      }).filter(e => e.content.trim() !== "");
+      localStorage.setItem("log_activity", JSON.stringify(entries));
+      showSaved();
+    }
+
+    function restoreActivityLog() {
+      const data = JSON.parse(localStorage.getItem("log_activity") || "[]");
+      if (data.length === 0) addEntry("activity-log", "activity-entry", "", "", saveActivityLog);
+      data.forEach(e => addEntry("activity-log", "activity-entry", e.content, e.time, saveActivityLog));
+    }
+
+    function saveSubstanceLog() {
+      const entries = Array.from(document.querySelectorAll(".substance-entry")).map(e => {
+        const [text, time] = e.querySelectorAll("input");
+        return { content: text.value, time: time.value };
+      }).filter(e => e.content.trim() !== "");
+      localStorage.setItem("log_substance", JSON.stringify(entries));
+      showSaved();
+    }
+
+    function restoreSubstanceLog() {
+      const data = JSON.parse(localStorage.getItem("log_substance") || "[]");
+      if (data.length === 0) addEntry("substance-log", "substance-entry", "", "", saveSubstanceLog);
+      data.forEach(e => addEntry("substance-log", "substance-entry", e.content, e.time, saveSubstanceLog));
+    }
+
+    // 症状チェック
+    function saveSymptoms() {
+      const selected = Array.from(document.querySelectorAll(".symptom:checked")).map(cb => cb.value);
+      localStorage.setItem("log_symptoms", JSON.stringify(selected));
+      showSaved();
+    }
+
+    function restoreSymptoms() {
+      const data = JSON.parse(localStorage.getItem("log_symptoms") || "[]");
+      document.querySelectorAll(".symptom").forEach(cb => cb.checked = data.includes(cb.value));
+    }
+
+    // 自由記述
+    function bindTextarea(id, key) {
+      const el = document.getElementById(id);
+      el.value = localStorage.getItem(key) || "";
+      el.addEventListener("input", () => {
+        localStorage.setItem(key, el.value);
+        showSaved();
+      });
+    }
+
+    // 睡眠保存
+    function saveSleepTimes() {
+      const start = document.getElementById("sleep-start").value;
+      const end = document.getElementById("sleep-end").value;
+      localStorage.setItem("log_sleep_start", start);
+      localStorage.setItem("log_sleep_end", end);
+      showSaved();
+    }
+
+    function restoreSleepTimes() {
+      document.getElementById("sleep-start").value = localStorage.getItem("log_sleep_start") || "";
+      document.getElementById("sleep-end").value = localStorage.getItem("log_sleep_end") || "";
+      calculateSleepDuration();
+    }
+
+    // 保存通知
+    let saveTimer;
+    function showSaved() {
+      const msg = document.getElementById("status-message");
+      msg.textContent = "保存しました";
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => msg.textContent = "", 1500);
+    }
+
+    // 全リセット
+    function resetAll() {
+      if (confirm("保存されたデータをすべて削除します。よろしいですか？")) {
+        ["log_sleep_start", "log_sleep_end", "log_activity", "log_substance", "log_symptoms", "log_notes", "log_overall", "log_review", "log_health"].forEach(k => localStorage.removeItem(k));
+        location.reload();
       }
-      const depas = parseInt(s("depas")), depasMg = (depas * 0.5).toFixed(1);
-      const bevType = s("beverageType");
-      const beverage = bevType === "その他" ? document.getElementById("beverageOther").value : bevType;
-
-      const text = `[** 📋 概要ログ]
- 総評: \`${s("summary")}\`
- 天気: \`${s("weather")}, 日中${s("temp")}℃, ${s("feeling")}\`
- 睡眠: \`${hours}h\` 質: \`${s("sleepQuality")}/5pt\`
- 食事: 朝\`${sc("mealMorning") ? "◯" : "☓"}\`｜昼\`${sc("mealNoon") ? "◯" : "☓"}\`｜夕\`${sc("mealEvening") ? "◯" : "☓"}\`
- 入浴: \`${s("bath")}\`
- 体調: \`AM:${s("condAM")}/5pt\`｜\`PM:${s("condPM")}/5pt\`
-  ${s("condNote")}
- 症状: \`${symptoms.join(",")}\`
- デパス(0.5mg): \`${depas}T/d\` = \`${depasMg}mg/d\`
- 嗜好品: \`${beverage}\`
- [* ふりかえり時の気分 (情緒の終着点)]
-  気分: \`${s("mood")}\`
-  score: \`${s("moodScore")}/5pt\``;
-
-      document.getElementById("outputArea").textContent = text;
-      document.getElementById("previewArea").innerHTML = text.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\n/g, "<br>");
     }
+
+    // イベント登録
+    document.addEventListener("DOMContentLoaded", () => {
+      displayToday();
+      restoreSleepTimes();
+      document.getElementById("sleep-start").addEventListener("change", () => {
+        saveSleepTimes(); calculateSleepDuration();
+      });
+      document.getElementById("sleep-end").addEventListener("change", () => {
+        saveSleepTimes(); calculateSleepDuration();
+      });
+
+      restoreActivityLog();
+      restoreSubstanceLog();
+      document.getElementById("add-activity").addEventListener("click", () => addEntry("activity-log", "activity-entry", "", "", saveActivityLog));
+      document.getElementById("add-substance").addEventListener("click", () => addEntry("substance-log", "substance-entry", "", "", saveSubstanceLog));
+
+      restoreSymptoms();
+      document.querySelectorAll(".symptom").forEach(cb => cb.addEventListener("change", saveSymptoms));
+
+      bindTextarea("note-health", "log_health");
+      bindTextarea("note-overall", "log_overall");
+      bindTextarea("note-review", "log_review");
+
+      document.getElementById("reset-storage").addEventListener("click", resetAll);
+    });
   </script>
+
 </body>
 </html>
