@@ -84,6 +84,7 @@
   <div id="status-message"></div>
   <button id="generate-output">Scrapbox用に出力</button>
   <button id="post-gist">Gistに投稿して共有</button>
+  <button id="download-md">.mdとしてダウンロード</button>
   <div>
     <label>ファイル名：<input type="text" id="filename" placeholder="yyyy-mm-dd.md"></label>
     <label>GitHub Token：<input type="password" id="token" placeholder="ghp_..."></label>
@@ -304,8 +305,37 @@
       });
     }
   });
+
+  document.getElementById('download-md').addEventListener('click', () => {
+  // 1. 出力されたテキストを取得
+  const markdown = document.getElementById('output-text').textContent;
+  if (!markdown.trim()) {
+    alert('まずは「Scrapbox用に出力」でMarkdownを生成してください');
+    return;
+  }
+
+  // 2. ファイル名を取得（既存のfilename入力欄から）
+  const filenameInput = document.getElementById('filename');
+  const filename = (filenameInput && filenameInput.value.trim()) || 'daily-log.md';
+
+  // 3. Blobを作ってダウンロードリンクを生成
+  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+
+  // 4. 一時リンクを作ってクリック
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+
+  // 5. 後片付け
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  });
 </script>
 
+  <script type="module" src="script.js"></script>
   <script type="module" src="gist-util.js"></script>
   <script type="module" src="gist.js"></script>
  
