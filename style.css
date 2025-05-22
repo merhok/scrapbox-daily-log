@@ -1,0 +1,74 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+      font-family: sans-serif;
+      padding: 1em;
+      max-width: 600px;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+    section {
+      margin-bottom: 1.5em;
+    }
+    a {
+      color:black;
+    }
+    details summary {
+      font-weight: bold;
+      margin-top: 1em;
+      cursor: pointer;
+    }
+    .entry, .activity-entry, .substance-entry {
+      display: flex;
+      gap: 0.5em;
+      margin-bottom: 0.5em;
+    }
+    #status-message {
+      color: green;
+      font-size: 0.9em;
+      margin-top: 0.3em;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 1em;
+        font-size: 1.1em;
+      }
+      .entry, .activity-entry, .substance-entry {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      input[type="text"], input[type="time"], textarea {
+        width: 100%;
+        max-width: 100%;
+        font-size: 1em;
+        padding: 0.6em;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        max-width: 100%;
+        padding: 0.8em;
+        margin-top: 0.5em;
+        font-size: 1em;
+        box-sizing: border-box;
+      }
+      #output-text {
+        font-size: 0.95em;
+      }
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1em;
+      box-sizing: border-box;
+    }
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
